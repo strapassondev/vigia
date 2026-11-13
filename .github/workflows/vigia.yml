@@ -1,0 +1,36 @@
+name: vigia
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vigia
+  cancel-in-progress: false
+
+jobs:
+  vigiar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/cache/restore@v6.1.0
+        with:
+          path: estado.json
+          key: estado-${{ github.run_id }}
+          restore-keys: estado-
+      - name: Vigiar
+        env:
+          ALVOS: ${{ secrets.ALVOS }}
+          TELEGRAM_ALERTA_TOKEN: ${{ secrets.TELEGRAM_ALERTA_TOKEN }}
+          TELEGRAM_ALERTA_CHAT_ID: ${{ secrets.TELEGRAM_ALERTA_CHAT_ID }}
+        run: node vigia.mjs
+      - uses: actions/cache/save@v6.1.0
+        if: always()
+        with:
+          path: estado.json
+          key: estado-${{ github.run_id }}

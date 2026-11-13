@@ -1,0 +1,24 @@
+name: manter-vivo
+
+# O GitHub desliga o agendamento de repositório público sem atividade por 60 dias.
+# Um commit por mês mantém o vigia ligado.
+on:
+  schedule:
+    - cron: "0 12 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  manter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - run: |
+          date -u +%Y-%m-%d > ultima-volta.txt
+          git config user.name "vigia"
+          git config user.email "vigia@users.noreply.github.com"
+          git add ultima-volta.txt
+          git commit -m "chore: vigia segue ligado" || exit 0
+          git push
